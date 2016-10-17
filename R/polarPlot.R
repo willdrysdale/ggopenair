@@ -863,74 +863,64 @@ polarPlot <-
   }
   
   
-  temp <- paste(type, collapse = "+")
-  myform <- formula(paste("z ~ u * v | ", temp, sep = ""))
+  angles <- seq(0, 2 * pi, length = 360)
+  themax <- upper
   
-  Args <- list(x = myform, res, axes = FALSE,
-               as.table = TRUE,
-               strip = strip,
-               strip.left = strip.left,
-               col.regions = col,
-               region = TRUE,
-               aspect = 1,
-               sub = sub,
-               par.strip.text = list(cex = 0.8),
-               scales = list(draw = FALSE),
-               xlim = c(-upper * 1.025, upper * 1.025),
-               ylim = c(-upper * 1.025, upper * 1.025),
-               colorkey = FALSE, legend = legend,
-               
-               panel = function(x, y, z, subscripts,...) {
-                 
-                 ## show missing data due to min.bin
-                 if (min.bin > 1)
-                   panel.levelplot(x, y, res$miss,
-                                   subscripts,
-                                   col.regions = mis.col,
-                                   labels = FALSE)
-                 
-                 panel.levelplot(x, y, z,
-                                 subscripts,
-                                 at = col.scale,
-                                 pretty = TRUE,
-                                 col.regions = col,
-                                 labels = FALSE)
-                 
-                 angles <- seq(0, 2 * pi, length = 360)
-                 
-                 sapply(intervals, function(x) 
-                   llines(x * sin(angles), x * cos(angles),
-                          col = "grey", lty = 5))
-                 
-                 
-                 ltext(1.07 * intervals * sin(pi * angle.scale / 180),
-                       1.07 * intervals * cos(pi * angle.scale / 180),
-                       sapply(paste(labels, c("", "", units, rep("", 7))), 
-                              function(x)
-                         quickText(x, auto.text)) , cex = 0.7, pos = 4)
-                 
-                 ## add axis line to central polarPlot
-                 lsegments(-upper, 0, upper, 0)
-                 lsegments(0, -upper, 0, upper)
-                 
-                 ltext(upper * -1 * 0.95, 0.07 * upper, "W", cex = 0.7)
-                 ltext(0.07 * upper, upper * -1 * 0.95, "S", cex = 0.7)
-                 ltext(0.07 * upper, upper * 0.95, "N", cex = 0.7)
-                 ltext(upper * 0.95, 0.07 *upper, "E", cex = 0.7)
-                 
-               })
+  datapoly <- data.frame(x = themax * sin(angles),
+                         y = themax * cos(angles))
   
-  ## reset for extra.args
-  Args<- listUpdate(Args, extra.args)
+  datalines <- data.frame(value = rep(intervals, each = 360), 
+                          x = rep(intervals, each = 360) * sin(angles),
+                          y = rep(intervals, each = 360) * cos(angles))
   
-  plt <- do.call(levelplot, Args)
+  data.axes <- data.frame(x1 = c(-upper, 0), y1 = c(0, -upper),
+                          x2 = c(upper, 0), y2 = c(0, upper))
+  
+  lab.interval <- intervals[-length(intervals)]
+  
+  data.scale <- data.frame(x = 1.07 * lab.interval * sin(pi * angle.scale / 180),
+                           y = 1.07 * lab.interval * cos(pi * angle.scale / 180), 
+                           label = lab.interval)
   
   
-  if (length(type) == 1)
-    plot(plt)
-  else
-    plot(useOuterStrips(plt, strip = strip,
-                        strip.left = strip.left))
+  # polar plot test
+  plt <- ggplot(res, aes(x = u, y = v)) +
+    theme_void() +
+    coord_cartesian(xlim = c(-upper * 1.025, upper * 1.025),
+                    ylim = c(-upper * 1.025, upper * 1.025)) +
+    geom_polygon(data = datapoly, aes(x = x, y = y), color = "grey95", 
+                 fill = "grey95") 
+  
+  if ("miss" %in% names(res))
+    plt <- plt + geom_raster(data  = filter(res, !is.na(miss)), aes(x = u, y = v), 
+                             fill = mis.col, 
+                             inherit.aes = FALSE) 
+  
+  plt <- plt +
+    geom_raster(na.rm = FALSE, aes(fill = z)) +
+    geom_path(data = datalines, aes(x = x, y = y), color = "white") +
+    geom_segment(data = data.axes, aes(x = x1, y = y1, xend = x2, yend = y2), 
+                 color = "white") +
+    geom_text(data = data.scale, aes(x = x, y = y, label = label), hjust = "left") +
+    annotate("text", upper * -1 * 0.95, 0, label = "W") +
+    annotate("text", 0, upper * -1 * 0.95, label = "S") +
+    annotate("text", 0, upper * 0.95, label = "N") +
+    annotate("text", upper * 0.95, 0, label = "E") +
+    scale_fill_gradientn(colours = openColours(cols, 100), na.value = "transparent") +
+    guides(fill = guide_colourbar(barheight = upper * 0.5, 
+                                  title = quickText(key.footer))) +
+    theme(aspect.ratio = 1, strip.background = element_rect(fill = "grey"))
+  
+  if (!"default" %in% type) {
+    if (length(type) == 1L)
+      plt <- plt + facet_wrap(reformulate(type))
+    
+    if (length(type) == 2L)
+      plt <- plt + facet_grid(paste(type[2], "~", type[1]))
+    
+  }
+  
+  plot(plt)
   
   newdata <- res
   output <- list(plot = plt, data = newdata, call = match.call())
