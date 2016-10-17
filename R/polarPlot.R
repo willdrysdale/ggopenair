@@ -761,7 +761,12 @@ polarPlot <-
   strip <- strip.dat[[1]]
   strip.left <- strip.dat[[2]]
   pol.name <- strip.dat[[3]]
+  pol.name2 <- strip.dat[[4]]
   if (uncertainty) strip <- TRUE
+  
+  # proper names for strip labels
+  levels(res[[type[1]]]) <- pol.name
+  if (length(type) == 2L) levels(res[[type[2]]]) <- pol.name2
   
   ## normalise by divining by mean conditioning value if needed
   if (normalise){
@@ -904,10 +909,10 @@ polarPlot <-
   
   if (!"default" %in% type) {
     if (length(type) == 1L)
-      plt <- plt + facet_wrap(reformulate(type))
+      plt <- plt + facet_wrap(reformulate(type), labeller = label_parsed)
     
     if (length(type) == 2L)
-      plt <- plt + facet_grid(paste(type[2], "~", type[1]))
+      plt <- plt + facet_grid(paste(type[2], "~", type[1]), labeller = label_parsed)
     
   }
   

@@ -920,8 +920,10 @@ poly.na <- function(x1, y1, x2, y2, group.number, myColors, alpha = 0.4, border 
 strip.fun <- function(results.grid, type, auto.text) {
     ## proper names of labelling ###################################################
     pol.name <- sapply(levels(factor(results.grid[[type[1]]])),
-                       function(x) quickText(x, auto.text))
+                       function(x) quickText(x, auto.text, expression = FALSE))
     strip <- strip.custom(factor.levels = pol.name)
+    
+    pol.name2 <- NULL
 
     if (length(type) == 1 ) {
 
@@ -929,12 +931,13 @@ strip.fun <- function(results.grid, type, auto.text) {
 
     } else { ## two conditioning variables
 
-        pol.name <- sapply(levels(factor(results.grid[[type[2]]])),
-                           function(x) quickText(x, auto.text))
+        pol.name2 <- sapply(levels(factor(results.grid[[type[2]]])),
+                           function(x) quickText(x, auto.text, expression = FALSE))
         strip.left <- strip.custom(factor.levels = pol.name)
+        
     }
     if (length(type) == 1 & type[1] == "default") strip <- FALSE ## remove strip
-    list(strip, strip.left, pol.name)
+    list(strip, strip.left, pol.name, pol.name2)
 }
 
 
