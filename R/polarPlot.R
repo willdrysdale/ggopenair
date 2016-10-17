@@ -697,7 +697,7 @@ polarPlot <-
       results <-  
         data.frame(u = rep(input.data$u, 3), v = rep(input.data$v, 3),
                    z = c(pred, Lower, Upper),
-                   default = rep(c("prediction", "lower uncertainty",
+                   uncertainty = rep(c("prediction", "lower uncertainty",
                                    "upper uncertainty"), each = n))
     }
     
@@ -756,13 +756,15 @@ polarPlot <-
   ## remove wind speeds > upper to make a circle
   if (clip) res$z[(res$u ^ 2 + res$v ^ 2) ^ 0.5 > upper] <- NA
   
+  if (uncertainty) type <-  "uncertainty"
+  
   ## proper names of labelling 
   strip.dat <- strip.fun(res, type, auto.text)
   strip <- strip.dat[[1]]
   strip.left <- strip.dat[[2]]
   pol.name <- strip.dat[[3]]
   pol.name2 <- strip.dat[[4]]
-  if (uncertainty) strip <- TRUE
+  
   
   # proper names for strip labels
   levels(res[[type[1]]]) <- pol.name
@@ -834,7 +836,6 @@ polarPlot <-
   if (uncertainty & is.null(extra.args$layout)) {
     extra.args$layout <- c(3, 1)
   }
-  
   
   
   ## scaling
