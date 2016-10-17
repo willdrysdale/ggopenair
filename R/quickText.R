@@ -33,7 +33,7 @@
 ##'      ylab = quickText("pm10 [ ug.m-3 ]"))
 ##'
 ##'
-quickText <- function(text, auto.text = TRUE){
+quickText <- function(text, auto.text = TRUE, expression = TRUE){
 
     ## the lookup table version
     
@@ -43,7 +43,14 @@ quickText <- function(text, auto.text = TRUE){
     ## #return if already expression
     if (is.expression(text)) return(ans <- text)
 
-    ans <- paste("expression(paste('", text, " ", sep = "")
+    if (!expression) {
+      
+      ans <- text
+      
+      } else {
+        
+        ans <- paste("expression(paste('", text, " ", sep = "")
+      }
     ans <- gsub("NO2", "' 'NO' [2] * '", ans)
     ans <- gsub("no2", "' 'NO' [2] * '", ans)
     ans <- gsub("NOX", "' 'NO' [x] * '", ans)
@@ -133,8 +140,12 @@ quickText <- function(text, auto.text = TRUE){
 
     ans <- gsub("umol/m2/s", "' * mu * 'mol m' ^-2 * ' s' ^-1 *'", ans)
     ans <- gsub("umol/m2", "' * mu * 'mol m' ^-2 *'", ans)
-
-    ans <- paste(ans, "'))", sep = "")
+  
+    if (expression) 
+      ans <- paste(ans, "'))", sep = "")
+      
+    
+    
 
     ## commands to strip unecessary * etc...
 
@@ -150,11 +161,11 @@ quickText <- function(text, auto.text = TRUE){
     ans <- gsub("^expression\\(paste\\( \\*", "expression(paste(", ans)
     ans <- gsub("^expression\\(paste\\(\\*", "expression(paste(", ans)
 
-    if (substr(ans, (nchar(ans) - 2), (nchar(ans) - 2)) == "*") {
-        a <- ans
-        ans <- paste(substr(a, 1, (nchar(a) - 2)), " ' ' ",
-                     substr(a, (nchar(a) - 1), nchar(a)), sep = "")
-    }
+#    if (substr(ans, (nchar(ans) - 2), (nchar(ans) - 2)) == "*") {
+ #       a <- ans
+ #       ans <- paste(substr(a, 1, (nchar(a) - 2)), " ' ' ",
+ #                    substr(a, (nchar(a) - 1), nchar(a)), sep = "")
+ #   }
 
 
     ## ###################
@@ -175,10 +186,13 @@ quickText <- function(text, auto.text = TRUE){
 
     if (inherits(try(eval(parse(text = ans)), TRUE), "try-error") ==
         FALSE) {
-        ans <- eval(parse(text = ans))
+        
+      if (expression) ans <- eval(parse(text = ans)) 
+      
     }
     else {
-        ans <- text
+        if (expression) ans <- text else ans <- paste0("'", ans, "'")
+        return(ans)
     }
 }
 
