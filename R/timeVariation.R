@@ -173,6 +173,7 @@
 ##'   \code{hemisphere = "southern"}.
 ##'
 ##' @import lattice ggplot2
+##' @importFrom lubridate ymd
 ##' @export
 ##' @return As well as generating the plot itself, \code{timeVariation} also
 ##'   returns an object of class ``openair''. The object includes three main
@@ -283,20 +284,20 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   ## get rid of R check annoyances
   variable = NULL
   
-  ## extra.args setup
-  extra.args <- list(...)
+  ## Args setup
+  Args <- list(...)
   
   ## label controls
   ## xlab handled in formals and code because unique
-  extra.args$ylab <- if ("ylab" %in% names(extra.args))
-    quickText(extra.args$ylab, auto.text) else
+  Args$ylab <- if ("ylab" %in% names(Args))
+    quickText(Args$ylab, auto.text) else
       quickText(paste(pollutant, collapse=", "), auto.text)
   
-  extra.args$main <- if ("main" %in% names(extra.args))
-    quickText(extra.args$main, auto.text) else quickText("", auto.text)
+  Args$main <- if ("main" %in% names(Args))
+    quickText(Args$main, auto.text) else quickText("", auto.text)
   
-  if ("fontsize" %in% names(extra.args))
-    trellis.par.set(fontsize = list(text = extra.args$fontsize))
+  if ("fontsize" %in% names(Args))
+    trellis.par.set(fontsize = list(text = Args$fontsize))
   
   if (statistic == "median" && missing(conf.int)) conf.int <- c(0.75, 0.95)
   
@@ -316,22 +317,22 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   }
   
   
-  extra.args$sub <- if ("sub" %in% names(extra.args))
-    quickText(extra.args$sub, auto.text) else quickText(sub.text, auto.text)
+  Args$sub <- if ("sub" %in% names(Args))
+    quickText(Args$sub, auto.text) else quickText(sub.text, auto.text)
   
-  extra.args$lwd <- if ("lwd" %in% names(extra.args)) extra.args$lwd else 2
+  Args$lwd <- if ("lwd" %in% names(Args)) Args$lwd else 2
   
-  ylim.handler <- if ("ylim" %in% names(extra.args))
+  ylim.handler <- if ("ylim" %in% names(Args))
     FALSE else TRUE
   
   
   ## if user supplies separate ylims for each plot
   ylimList <- FALSE
   
-  if ("ylim" %in% names(extra.args)) {
-    if (is.list(extra.args$ylim)) {
-      if (length(extra.args$ylim) != 4) stop("ylim should be a list of 4")
-      ylim.list <- extra.args$ylim
+  if ("ylim" %in% names(Args)) {
+    if (is.list(Args$ylim)) {
+      if (length(Args$ylim) != 4) stop("ylim should be a list of 4")
+      ylim.list <- Args$ylim
       ylimList <- TRUE
     }
   }
@@ -391,17 +392,25 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## data checks
   mydata <- checkPrep(mydata, vars, type, remove.calm = FALSE)
+  
   if (!missing(group))  mydata <- cutData(mydata, group, local.tz = local.tz, ...)
+  
   mydata <- cutData(mydata, type, local.tz = local.tz, ...)
+  
+  # if using a type, make sure there are no NA
+  if (type != "default") {
+    id <- which(is.na(mydata[[type]]))
+    if (length(id) > 0) mydata <- mydata[-id, ]
+  }
   
   ## put in local time if needed
   if (!is.null(local.tz)) attr(mydata$date, "tzone") <- local.tz
   
   ## title for overall and individual plots
-  overall.main <- extra.args$main
-  extra.args$main <- ""
-  overall.sub <- extra.args$sub
-  extra.args$sub <- ""
+  overall.main <- Args$main
+  Args$main <- ""
+  overall.sub <- Args$sub
+  Args$sub <- ""
   
   ## labels for pollutants, can be user-defined, special handling when difference = TRUE
   poll.orig <- pollutant
@@ -426,8 +435,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
     
     mydata$variable <- factor(mydata$variable)  ## drop unused factor levels
     the.names <- levels(mydata[["variable"]])
-    if (difference) the.names <- c(the.names, paste(levels(mydata$variable)[2], "-",
-                                                    levels(mydata$variable)[1]))
+    
+    if (difference) 
+      the.names <- c(the.names, paste(levels(mydata$variable)[2], "-",
+                                      levels(mydata$variable)[1]))
+    
     mylab <-  sapply(the.names, function(x) quickText(x, auto.text))
   }
   
@@ -441,7 +453,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
     x
   }
   
-  if (normalise) extra.args$ylab <- "normalised level"
+  if (normalise) Args$ylab <- "normalised level"
   
   ## get days in right order
   days <- format(ISOdate(2000, 1, 2:8), "%A")
@@ -506,17 +518,8 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                 text = list(lab = mylab),  space = "bottom", columns = key.columns,
                 lines.title = 1)
     
-    extra.args$main <- overall.main
+    Args$main <- overall.main
   }
-  
-  
-  # proper names of labelling 
-  if (type != "default") {
-    stripName <- sapply(levels(factor(data.hour[[type]])), function(x) quickText(x, auto.text))
-    strip <- strip.custom(factor.levels =  stripName)
-  } else {
-    strip <- FALSE
-  }  
   
   # hour calculations ---------------------------------------------
  
@@ -533,6 +536,14 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                              statistic = statistic)
   }
   
+  # proper names of labelling 
+  if (type != "default") {
+    stripName <- sapply(levels(factor(data.hour[[type]])), function(x) quickText(x, auto.text))
+    strip <- strip.custom(factor.levels =  stripName)
+  } else {
+    strip <- FALSE
+  }
+  
   
   if (normalise) data.hour <- group_by(data.hour, variable) %>%
     do(divide.by.mean(.))
@@ -544,11 +555,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## ylim hander
   if (ylim.handler)
-    extra.args$ylim <- rng(data.hour)
+    Args$ylim <- rng(data.hour)
   
   ## user supplied separate ylim
   if (ylimList)
-    extra.args$ylim <- ylim.list[[1]]
+    Args$ylim <- ylim.list[[1]]
   
   ## plot
   
@@ -556,7 +567,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   pltHr <- ggplot(data.hour, aes(x = hour, y = Mean, ymin = Lower, ymax = Upper, 
                                  col = variable, fill = variable)) +
     geom_ribbon(alpha = alpha, colour = NA) +
-    geom_line(size = extra.args$lwd) +
+    geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = c(0, 6, 12, 18, 23), 
                        expand = c(0.02, 0),
                        minor_breaks = seq(0, 23, 3)) +
@@ -567,8 +578,9 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                       breaks = levels(data.hour$variable),
                       labels = mylab) +
     theme(legend.position = "none") +
-    ylab(extra.args$ylab) +
-    xlab(xlab[1])
+    ylab(Args$ylab) +
+    xlab(xlab[1]) +
+    ylim(Args$ylim)
   
   
   # weekday -------------------------------------------------------
@@ -597,11 +609,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## ylim hander
   if (ylim.handler)
-    extra.args$ylim <- rng(data.weekday)
+    Args$ylim <- rng(data.weekday)
   
   ## user supplied separate ylim
   if (ylimList)
-    extra.args$ylim <- ylim.list[[2]]
+    Args$ylim <- ylim.list[[2]]
   
   ## plot
   pltWkday <- ggplot(data.weekday, aes(x = wkday, y = Mean, 
@@ -609,7 +621,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                                        ymin = Lower, ymax = Upper, 
                                        col = variable, fill = variable)) +
     geom_rect(alpha = alpha, colour = NA) +
-    geom_line(size = extra.args$lwd) +
+    geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = 1:7, 
                        expand = c(0.02, 0),
                        minor_breaks = seq(0, 7, 1),
@@ -621,8 +633,9 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                       breaks = levels(data.hour$variable),
                       labels = mylab) +
     theme(legend.position = "none") +
-    ylab(extra.args$ylab) +
-    xlab(xlab[4])
+    ylab(Args$ylab) +
+    xlab(xlab[4]) +
+    ylim(Args$ylim)
   
   ## month ############################################################################
   
@@ -646,11 +659,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## ylim hander
   if (ylim.handler)
-    extra.args$ylim <- rng(data.month)
+    Args$ylim <- rng(data.month)
   
   ## user supplied separate ylim
   if (ylimList)
-    extra.args$ylim <- ylim.list[[3]]
+    Args$ylim <- ylim.list[[3]]
   
   ## plot
   pltMnth <- ggplot(data.month, aes(x = mnth, y = Mean, 
@@ -658,12 +671,12 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                                     ymin = Lower, ymax = Upper, 
                                     col = variable, fill = variable)) +
     geom_rect(alpha = alpha, colour = NA) +
-    geom_line(size = extra.args$lwd) +
+    geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = 1:12, 
                        expand = c(0.02, 0),
                        minor_breaks = seq(0, 12, 1),
-                       labels = substr(format(seq(as.Date("2000-01-01"),
-                                                  as.Date("2000-12-31"), "month"),
+                       labels = substr(format(seq(ymd("2000-01-01"),
+                                                  ymd("2000-12-31"), "month"),
                                               "%B"), 1, 1)) +
     scale_colour_manual(values = openColours(cols, npol), 
                         breaks = levels(data.hour$variable), 
@@ -672,10 +685,13 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                       breaks = levels(data.hour$variable),
                       labels = mylab) +
     theme(legend.position = "none") +
-    ylab(extra.args$ylab) +
-    xlab(xlab[3])
+    ylab(Args$ylab) +
+    xlab(xlab[3]) +
+    ylim(Args$ylim)
   
-  ## day and hour ############################################################################
+
+# day and hour --------------------------------------------------
+
   
   if (difference) {
     data.day.hour <- errorDiff(mydata, vars = "day.hour", type = type, poll1 = poll1,
@@ -722,18 +738,18 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## ylim hander
   if(ylim.handler)
-    extra.args$ylim <- rng(data.day.hour)
+    Args$ylim <- rng(data.day.hour)
   
   ## user supplied separate ylim
   if (ylimList)
-    extra.args$ylim <- ylim.list[[4]]
+    Args$ylim <- ylim.list[[4]]
   
   
   ## plot
   pltDayHr <- ggplot(data.day.hour, aes(x = hour, y = Mean, ymin = Lower, ymax = Upper, 
                                         col = variable, fill = variable)) +
     geom_ribbon(alpha = alpha, colour = NA) +
-    geom_line(size = extra.args$lwd) +
+    geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = c(0, 6, 12, 18, 23), 
                        expand = c(0.02, 0),
                        minor_breaks = seq(0, 23, 3)) +
@@ -745,69 +761,47 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                       values = openColours(cols, npol), 
                       breaks = levels(data.hour$variable),
                       labels = mylab) +
-    theme(legend.position = "bottom") +
+    theme(legend.position = "bottom", legend.text.align = 0) +
     facet_grid(~ wkday) +
-    ylab(extra.args$ylab) +
-    xlab(xlab[2])
+    ylab(Args$ylab) +
+    xlab(xlab[2]) +
+    ylim(Args$ylim)
   
   
   subsets = c("pltDayHr", "pltHr", "pltwday", "pltmnth")
   
-  ## this adjusts the space for the title to 2 lines (approx) if \n in title
-  if (length(grep("atop", overall.main) == 1)) {
-    y.upp <- 0.95; y.dwn <- 0.05
-  } else {
-    y.upp <- 0.975; y.dwn <- 0.025
+  # for facetting
+  if (type != "default") {
+    pltHr <- pltHr + facet_grid(reformulate(type), labeller = label_parsed(stripName)) 
+    pltMnth <- pltMnth + facet_grid(reformulate(type)) 
+    pltWkday <- pltWkday + facet_grid(reformulate(type)) 
+    pltDayHr <- pltDayHr + facet_grid(paste(type, "~ wkday"))
   }
   
+ 
   # plot all 4 plots
   layout <- matrix(c(1, 1, 1, 2, 3, 4), nrow = 2, byrow = TRUE)
   multiplot(plotlist = list(pltDayHr, pltHr, pltMnth, pltWkday), layout = layout)
   
-  #     main.plot <- function(...) {
-  #         if (type == "default") {
-  #             print(update(day.hour, 
-  #                          key = list(rectangles = list(col = myColors[1:npol], border = NA),
-  #                                        text = list(lab = mylab), space = "bottom", 
-  #                                     columns = key.columns,
-  #                                        title = "", lines.title = 1)
-  #                          ), position = c(0, 0.5, 1, y.upp), more = TRUE)
-  #         } else {
-  #             print(update(useOuterStrips(day.hour, strip = strip, strip.left = strip.left),
-  #                          key = list(rectangles = list(col = myColors[1:npol], border = NA),
-  #                              text = list(lab = mylab), space = "bottom", columns = key.columns,
-  #                              title = "", lines.title = 1)
-  #                          ), position = c(0, 0.5, 1, y.upp), more = TRUE)
-  #         }
-  #         print(hour, position = c(0, y.dwn, 0.33, 0.53), more = TRUE)
-  #         print(month, position = c(0.33, y.dwn, 0.66, 0.53), more = TRUE)
-  #         print(day, position = c(0.66, y.dwn, 1, 0.53))
-  #         ## use grid to add an overall title
-  #         grid.text(overall.main, 0.5, y.upp, gp = gpar(fontsize = 14))
-  #         grid.text(overall.sub, 0.5, y.dwn, gp = gpar(fontsize = 12))
-  #     }
+  # return individual plots with legends
+  output <- list(plot = list(pltDayHr, 
+                             pltHr + theme(legend.position = "right", legend.text.align = 0), 
+                             pltWkday + theme(legend.position = "right", legend.text.align = 0), 
+                             pltMnth + theme(legend.position = "right", legend.text.align = 0), 
+                             subsets = subsets),
+                 data = list(data.day.hour, data.hour, data.weekday, 
+                             data.month, subsets = subsets),
+                 call = match.call())
+  
+  names(output$data)[1:4] <- subsets
+  names(output$plot)[1:4] <- subsets
+  class(output) <- "openair"
   # 
-  #     ind.plot = function(x, ...){
-  #         plot(update(x, key = list(
-  #                            rectangles = list(col = myColors[1:npol], border = NA),
-  #                            text = list(lab = mylab), space = "top", columns = key.columns)
-  #                     ), ...)
-  #     }
-  # 
-  #     main.plot()
-  #     output <- list(plot = list(day.hour, hour, day, month, subsets = subsets),
-  #                    data = list(data.day.hour, data.hour, data.weekday, data.month, subsets = subsets),
-  #                    call = match.call(),
-  #                    main.plot = main.plot, ind.plot = ind.plot
-  #                    )
-  #     names(output$data)[1:4] <- subsets
-  #     names(output$plot)[1:4] <- subsets
-  #     class(output) <- "openair"
-  # 
-  #     invisible(output)
+  invisible(output)
 }
 
-proc <- function(conf.int = conf.int, mydata, vars = "day.hour", pollutant, type, B = B,
+proc <- function(conf.int = conf.int, mydata, vars = "day.hour", 
+                 pollutant, type, B = B,
                  statistic = statistic) {
   
   ## get rid of R check annoyances
@@ -822,9 +816,9 @@ proc <- function(conf.int = conf.int, mydata, vars = "day.hour", pollutant, type
   summary.values <- function(conf.int = conf.int, mydata, vars = vars, FUN, type = type, B = B,
                              statistic = statistic) {
     
-    if (vars == "hour")  myform <- formula(paste("value ~ variable + hour +", type))
+    if (vars == "hour") myform <- formula(paste("value ~ variable + hour +", type))
     
-    if (vars == "day.hour")  myform <- formula(paste("value ~ variable + wkday + hour +", type))
+    if (vars == "day.hour") myform <- formula(paste("value ~ variable + wkday + hour +", type))
     
     if (vars == "wkday") myform <- formula(paste("value ~ variable + wkday +", type))
     
@@ -919,8 +913,8 @@ errorDiff <- function(mydata, vars = "day.hour", poll1, poll2, type, B = B,
 
 ## function to calculate median and lower/upper quantiles
 median.hilow <- function (x, conf.int = 0.95, na.rm = TRUE, ...) {
-  quant <- quantile(x, probs = c(0.5, (1 - conf.int) / 2, (1 +
-                                                             conf.int) / 2), na.rm = na.rm)
+  quant <- quantile(x, probs = c(0.5, (1 - conf.int) / 2, 
+                                 (1 + conf.int) / 2), na.rm = na.rm)
   names(quant) <- c("Mean", "Lower", "Upper")
   quant
 }
