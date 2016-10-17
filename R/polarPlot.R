@@ -797,30 +797,24 @@ polarPlot <-
     # breaks <- pretty(res$z, n = nlev)
     breaks <- seq(min(res$z, na.rm = TRUE), max(res$z, na.rm = TRUE),
                   length.out = nlev)
-    labs <- pretty(breaks, 7)
-    labs <- labs[labs >= min(breaks) & labs <= max(breaks)]
-    at <- labs
     
   } else {
     
     ## handle user limits and clipping
     breaks <- seq(min(limits), max(limits), length.out = nlev)
-    labs <- pretty(breaks, 7)
-    labs <- labs[labs >= min(breaks) & labs <= max(breaks)]
-    at <- labs
     
     ## case where user max is < data max
     if (max(limits) < max(res[["z"]], na.rm = TRUE)) {
       id <- which(res[["z"]] > max(limits))
       res[["z"]][id] <- max(limits)
-      labs[length(labs)] <- paste(">", labs[length(labs)])
+      
     }
     
     ## case where user min is > data min
     if (min(limits) > min(res[["z"]], na.rm = TRUE)) {
       id <- which(res[["z"]] < min(limits))
       res[["z"]][id] <- min(limits)
-      labs[1] <- paste("<", labs[1])
+      
     }
     
   }
@@ -836,14 +830,6 @@ polarPlot <-
     extra.args$layout <- c(3, 1)
   }
   
-  
-  legend <- list(col = col, at = col.scale, 
-                 labels = list(labels = labs, at = at),
-                 space = key.position, auto.text = auto.text,
-                 footer = key.footer, header = key.header,
-                 height = 1, width = 1.5, fit = "all")
-  
-  legend <- makeOpenKeyLegend(key, legend, "polarPlot")
   
   
   ## scaling
@@ -862,6 +848,10 @@ polarPlot <-
     intervals <- intervals[-1]
   }
   
+  
+  # if user does not set limits, this just results in data limits being used
+  if (length(limits) == 1 && is.na(limits[1]))
+    limits <- c(NA, NA)
   
   angles <- seq(0, 2 * pi, length = 360)
   themax <- upper
@@ -906,9 +896,10 @@ polarPlot <-
     annotate("text", 0, upper * -1 * 0.95, label = "S") +
     annotate("text", 0, upper * 0.95, label = "N") +
     annotate("text", upper * 0.95, 0, label = "E") +
-    scale_fill_gradientn(colours = openColours(cols, 100), na.value = "transparent") +
-    guides(fill = guide_colourbar(barheight = upper * 0.5, 
-                                  title = quickText(key.footer))) +
+    scale_fill_gradientn(colours = openColours(cols, 100), 
+                         na.value = "transparent", limits = limits) +
+    guides(fill = guide_colourbar(title = quickText(key.footer), 
+                                  barheight = unit(0.5, "npc"))) +
     theme(aspect.ratio = 1, strip.background = element_rect(fill = "grey"))
   
   if (!"default" %in% type) {
