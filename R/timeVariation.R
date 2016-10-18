@@ -320,7 +320,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   Args$sub <- if ("sub" %in% names(Args))
     quickText(Args$sub, auto.text) else quickText(sub.text, auto.text)
   
-  Args$lwd <- if ("lwd" %in% names(Args)) Args$lwd else 2
+  Args$lwd <- if ("lwd" %in% names(Args)) Args$lwd else 1.5
   
   ylim.handler <- if ("ylim" %in% names(Args))
     FALSE else TRUE
@@ -777,6 +777,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                       breaks = levels(data.hour$variable),
                       labels = mylab) +
     theme(legend.position = "bottom", legend.text.align = 0) +
+    guides(col = guide_legend(ncol = npol)) +
     facet_grid(~ wkday) +
     ylab(Args$ylab) +
     xlab(xlab[2]) +
