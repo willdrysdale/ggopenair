@@ -249,8 +249,8 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
                      type = "default", avg.time = "month",
                      statistic = "mean", percentile = NA, data.thresh = 0, alpha = 0.05,
                      dec.place = 2, xlab = "year", lab.frac = 0.99, lab.cex = 0.8,
-                     x.relation = "same", y.relation = "same", data.col = "cornflowerblue",
-                     trend = list(lty = c(1, 5), lwd = c(2, 1), col = c("red", "red")),
+                     x.relation = "same", y.relation = "same", data.col = "grey40",
+                     trend = list(lty = c(1, 5), lwd = c(2, 1), col = c("dodgerblue", "darkorange")),
                      text.col = "darkgreen", slope.text = NULL, cols = NULL, 
                      shade = "grey95", auto.text = TRUE,
                      autocor = FALSE, slope.percent = FALSE, date.breaks = 7,...)  {
@@ -424,36 +424,34 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
 
   if (nrow(split.data) < 2) return()
   
-  
-  ## special wd layout
-  #(type field in results.grid called type not wd)
-  if (length(type) == 1 &
-      type[1] == "wd" & is.null(extra.args$layout)) {
-    ## re-order to make sensible layout
-    ## starting point code as of ManKendall
-    wds <-  c("NW", "N", "NE", "W", "E", "SW", "S", "SE")
+  # insert a blank facet spacer for correct wind sector layout
+  if (length(type) == 1 && type[1] == "wd") {
+    
+    split.data$wd <- as.character(split.data$wd) # need to add a new level
+    extra <- split.data[1, ]
+    id <- which(!names(split.data) %in% c("wd", "date"))
+    extra[, id] <- NA
+    split.data <- bind_rows(extra, split.data)
+    split.data$wd[1] <- "blank"
+    wds <-  c("NW", "N", "NE", "W", "blank", "E", "SW", "S", "SE")
     split.data$wd <- ordered(split.data$wd, levels = wds)
-    wd.ok <-
-      sapply(wds, function (x) {
-        if (x %in% unique(split.data$wd))
-          FALSE
-        else
-          TRUE
-      })
-    skip <- c(wd.ok[1:4], TRUE, wd.ok[5:8])
-    split.data$wd <- factor(split.data$wd)
-    extra.args$layout <- c(3, 3)
-    if (!"skip" %in% names(extra.args))
-      extra.args$skip <- skip
+    
+    
   }
-  if(!"skip" %in% names(extra.args))
-    extra.args$skip <- FALSE
   
-  ## proper names of labelling #######################################
+  
+  
+  ## proper names of labelling 
   strip.dat <- strip.fun(split.data, type, auto.text)
   strip <- strip.dat[[1]]
   strip.left <- strip.dat[[2]]
   pol.name <- strip.dat[[3]]
+  pol.name2 <- strip.dat[[4]]
+  
+  
+  # proper names for strip labels
+  levels(split.data[[type[1]]]) <- pol.name
+  if (length(type) == 2L) levels(split.data[[type[2]]]) <- pol.name2
   
   #### calculate slopes etc ###########################################
   
@@ -510,104 +508,96 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
   percent.change <- percent.change[ ,  c(type, "slope.percent", 
                                          "lower.percent", "upper.percent")]
   
+  # if using a type, make sure there are no NA
+  if (!"default" %in% type) {
+    id <- which(is.na(split.data[[type[1]]]))
+    if (length(id) > 0) split.data <- split.data[-id, ]
+    
+    if (length(type) == 2) {
+      id <- which(is.na(split.data[[type[2]]]))
+      if (length(id) > 0) split.data <- split.data[-id, ]
+    }
+  }
+  
   split.data <- merge(split.data, percent.change, by = type)
   
   res2 <- merge(res2, percent.change, by = type)
   ## #################################################################
   
+  ## for text on plot - % trend or not?
+  slope <- "slope"
+  lower <- "lower"
+  upper <- "upper"
+  units <- "units"
   
-  temp <- paste(type, collapse = "+")
-  myform <- formula(paste("conc ~ date| ", temp, sep = ""))
+  if (slope.percent) {
+    slope <- "slope.percent"
+    lower <- "lower.percent"
+    upper <- "upper.percent"
+    units <- "%"
+  }
   
-  gap <- (max(split.data$date) - min(split.data$date)) / 80
-  if (is.null(xlim)) xlim <- range(split.data$date) + c(-1 * gap, gap)
+  if (!is.null(slope.text)) {
+    
+    slope.text <- slope.text
+    
+  } else {
+    
+    slope.text <- paste0(units, "/year")
+    
+  }
   
-  xyplot.args <- list(x = myform, data = split.data,
-                      xlab = quickText(xlab, auto.text),
-                      par.strip.text = list(cex = 0.8),
-                      as.table = TRUE,
-                      xlim = xlim,
-                      strip = strip,
-                      strip.left = strip.left,
-                      scales = list(x = list(at = date.at, format = date.format,
-                                             relation = x.relation),
-                                    y = list(relation = y.relation, rot = 0)),
-                      
-                      panel = function(x, y, subscripts,...){
-                        ## year shading
-                        panel.shade(split.data, start.year, end.year,
-                                    ylim = current.panel.limits()$ylim, shade)
-                        panel.grid(-1, 0)
-                        
-                        panel.xyplot(x, y, type = "b", col = data.col, ...)
-                        
-                        # sub.dat <- na.omit(split.data[subscripts, ])
-                        sub.dat <- split.data[subscripts, ]
-                      
-                        # need some data to plot, check if enough information to show trend
-                        if (nrow(sub.dat) > 0  && !all(is.na(sub.dat$slope))) {
-                          panel.abline(a = sub.dat[1, "intercept"],
-                                       b = sub.dat[1, "slope"] / 365,
-                                       col = trend$col[1], lwd = trend$lwd[1],
-                                       lty = trend$lty[1])
-                          panel.abline(a = sub.dat[1, "intercept.lower"],
-                                       b = sub.dat[1, "lower"] / 365,
-                                       col = trend$col[2], lwd = trend$lwd[2],
-                                       lty = trend$lty[2])
-                          panel.abline(a = sub.dat[1, "intercept.upper"],
-                                       b = sub.dat[1, "upper"] / 365,
-                                       col = trend$col[2], lwd = trend$lwd[2],
-                                       lty = trend$lty[2])
-                          
-                          ## for text on plot - % trend or not?
-                          slope <- "slope"
-                          lower <- "lower"
-                          upper <- "upper"
-                          units <- "units"
-                          
-                          if (slope.percent) {
-                            slope <- "slope.percent"
-                            lower <- "lower.percent"
-                            upper <- "upper.percent"
-                            units <- "%"
-                          }
-                          
-                          ## allow user defined slope text
-                          if (!is.null(slope.text)) {
-                            
-                            slope.text <- slope.text
-                            
-                          } else {
-                            
-                            slope.text <- paste0(units, "/year")
-                            
-                          }
-                          
-                          ## plot top, middle
-                          panel.text(mean(c(current.panel.limits()$xlim[2], 
-                                            current.panel.limits()$xlim[1])),
-                                     current.panel.limits()$ylim[1] + lab.frac *
-                                       (current.panel.limits()$ylim[2] - 
-                                          current.panel.limits()$ylim[1]),
-                                     paste(round(sub.dat[1, slope], dec.place), " ", "[",
-                                           round(sub.dat[1, lower], dec.place), ", ",
-                                           round(sub.dat[1, upper], dec.place), "] ",
-                                           slope.text, " ", sub.dat[1, "p.stars"], sep = ""),
-                                     cex = lab.cex, adj = c(0.5, 1), col = text.col, font = 2)
-                        }
-                      })
+  # use this data to extract only stats, not data
+  subDat <- distinct_(split.data, .dots = type, .keep_all = TRUE)
   
-  #reset for extra.args
-  xyplot.args<- listUpdate(xyplot.args, extra.args)
+  # the slope equation printed on each facet
+  subDat$eq <- paste0(round(subDat[[slope]], dec.place), " ", "[",
+                      round(subDat[[lower]], dec.place), ", ",
+                      round(subDat[[upper]], dec.place), "] ",
+                      slope.text, " ", subDat[["p.stars"]])
   
-  #plot
-  plt <- do.call(xyplot, xyplot.args)
+  # remove slope info that is NA (this is for type = "wd", where a blank
+  # middle panel is added)
+  id <- grep("NA", x = subDat$eq)
+  if (length(id) > 0) subDat$eq[id] <- ""
+  
+  plt <- ggplot(split.data, aes(x = date, y = conc)) +
+    geom_line(color = "grey80") +
+    geom_point(color = data.col, size = 3) +
+    geom_abline(data = distinct_(split.data, type, .keep_all = TRUE), 
+                aes(slope = b, intercept = a, inherit.aes = FALSE), 
+                size = trend$lwd[1], 
+                color = trend$col[1], lty = trend$lty[1]) +
+    geom_abline(data = subDat,
+                aes(slope = upper.b, intercept = upper.a, inherit.aes = FALSE), 
+                size = trend$lwd[2], 
+                color = trend$col[2], lty = trend$lty[2]) +
+    geom_abline(data = subDat,
+                aes(slope = lower.b, intercept = lower.a, inherit.aes = FALSE), 
+                size = trend$lwd[2], 
+                color = trend$col[2], lty = trend$lty[2]) +
+    geom_text(data = subDat,
+              aes(x = mean(split.data[["date"]]), y = 1.1 * max(split.data[["conc"]], na.rm = TRUE), 
+                  label = eq, inherit.aes = FALSE), color = "forestgreen", size = 3,
+              vjust = "top") +
+    ylab(extra.args$ylab) +
+    xlab(xlab)
+  
+  if (!"default" %in% type) {
+    if (length(type) == 1L)
+      plt <- plt + facet_wrap(reformulate(type), labeller = label_parsed)
+    
+    if (length(type) == 2L)
+      plt <- plt + facet_grid(paste(type[2], "~", type[1]), labeller = label_parsed)
+    
+  }
+    
+  
+  plot(plt)
   
   
   ## output ##########################################################
   
-  if (length(type) == 1) plot(plt) else 
-    plot(useOuterStrips(plt, strip = strip, strip.left = strip.left))
   
   newdata <- list(main.data = split.data, res2 = res2, 
                   subsets = c("main.data", "res2"))
