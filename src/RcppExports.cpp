@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // Cquant
 NumericVector Cquant(NumericVector A, NumericVector probs);
-RcppExport SEXP openair_Cquant(SEXP ASEXP, SEXP probsSEXP) {
+RcppExport SEXP ggopenair_Cquant(SEXP ASEXP, SEXP probsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

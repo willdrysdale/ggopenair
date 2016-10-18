@@ -565,8 +565,13 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   
   pltHr <- ggplot(data.hour, aes(x = hour, y = Mean, ymin = Lower, ymax = Upper, 
-                                 col = variable, fill = variable)) +
-    geom_ribbon(alpha = alpha, colour = NA) +
+                                 col = variable, fill = variable)) 
+  
+  # plot uncertainty intervals?
+  if (ci) pltHr <- pltHr +
+    geom_ribbon(alpha = alpha, colour = NA) 
+  
+  pltHr <- pltHr +
     geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = c(0, 6, 12, 18, 23), 
                        expand = c(0.02, 0),
@@ -619,8 +624,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   pltWkday <- ggplot(data.weekday, aes(x = wkday, y = Mean, 
                                        xmin = wkday - 0.4, xmax = wkday + 0.4,
                                        ymin = Lower, ymax = Upper, 
-                                       col = variable, fill = variable)) +
-    geom_rect(alpha = alpha, colour = NA) +
+                                       col = variable, fill = variable)) 
+  if (ci) pltWkday <- pltWkday +
+    geom_rect(alpha = alpha, colour = NA) 
+  
+  pltWkday <- pltWkday +
     geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = 1:7, 
                        expand = c(0.02, 0),
@@ -669,8 +677,11 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   pltMnth <- ggplot(data.month, aes(x = mnth, y = Mean, 
                                     xmin = mnth - 0.4, xmax = mnth + 0.4,
                                     ymin = Lower, ymax = Upper, 
-                                    col = variable, fill = variable)) +
-    geom_rect(alpha = alpha, colour = NA) +
+                                    col = variable, fill = variable)) 
+  if (ci) pltMnth <- pltMnth +
+    geom_rect(alpha = alpha, colour = NA) 
+  
+  pltMnth <- pltMnth +
     geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = 1:12, 
                        expand = c(0.02, 0),
@@ -747,8 +758,12 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## plot
   pltDayHr <- ggplot(data.day.hour, aes(x = hour, y = Mean, ymin = Lower, ymax = Upper, 
-                                        col = variable, fill = variable)) +
-    geom_ribbon(alpha = alpha, colour = NA) +
+                                        col = variable, fill = variable)) 
+  
+  if (ci) pltDayHr <- pltDayHr +
+    geom_ribbon(alpha = alpha, colour = NA) 
+  
+  pltDayHr <- pltDayHr +
     geom_line(size = Args$lwd) +
     scale_x_continuous(breaks = c(0, 6, 12, 18, 23), 
                        expand = c(0.02, 0),
