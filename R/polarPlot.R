@@ -898,7 +898,7 @@ polarPlot <-
     geom_segment(data = data.axes, aes(x = x1, y = y1, xend = x2, yend = y2), 
                  color = "white") +
     geom_text(data = data.scale, aes(x = x, y = y, label = label), 
-              hjust = "left", size = 2.5) +
+              hjust = "left", size = 4) +
     annotate("text", upper * -1 * 0.95, 0, label = "W") +
     annotate("text", 0, upper * -1 * 0.95, label = "S") +
     annotate("text", 0, upper * 0.95, label = "N") +
