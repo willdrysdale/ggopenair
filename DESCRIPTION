@@ -1,4 +1,4 @@
-Package: openair
+Package: ggopenair
 Type: Package
 Title: Tools for the Analysis of Air Pollution Data
 Version: 0.1
