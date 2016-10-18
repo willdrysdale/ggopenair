@@ -876,7 +876,7 @@ polarPlot <-
   
   data.scale <- data.frame(x = 1.07 * lab.interval * sin(pi * angle.scale / 180),
                            y = 1.07 * lab.interval * cos(pi * angle.scale / 180), 
-                           label = lab.interval)
+                           label = labels[-length(labels)])
   
   
   # polar plot test
