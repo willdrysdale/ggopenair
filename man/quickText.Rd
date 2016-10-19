@@ -4,7 +4,7 @@
 \alias{quickText}
 \title{Automatic text formatting for openair}
 \usage{
-quickText(text, auto.text = TRUE)
+quickText(text, auto.text = TRUE, expression = TRUE)
 }
 \arguments{
 \item{text}{A character vector.}
