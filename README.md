@@ -6,6 +6,8 @@ This is work in progress. The aim is to move **openair** from `lattice` to `ggpl
 - `ggplot2` is actively being developed and there is a growing list of other packages that build on `ggplot2`
 - It will be easier for users to modify plots 'after the fact'
 
+The plotting functions that currently (mostly) work include `timeVariation`, `polarPlot`, `TheilSen`.
+
 ## Installation
 
 Installation of openair from GitHub is easy using the devtools
