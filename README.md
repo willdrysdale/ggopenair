@@ -20,4 +20,4 @@ require(devtools)
 install_github('davidcarslaw/ggopenair')
 ```
 
-**This repository will gradually implement most (but not all) openair functions in `ggplot2`. The package should be considered experimental and unstable until it replaces openair. 
+**This repository will gradually implement most (but not all) openair functions in `ggplot2`. The package should be considered experimental and unstable until it replaces openair.** 
