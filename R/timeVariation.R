@@ -425,7 +425,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   if (missing(group)) {
     
     mydata <- gather(mydata, key = variable, value = value, one_of(poll.orig))
-    mydata$variable <- factor(mydata$variable)  ## drop unused factor levels
+    mydata$variable <- factor(mydata$variable, levels = pollutant)  ## drop unused factor levels
     
   } else {
     ## group needs to be 'variable' and pollutant 'value'
@@ -910,7 +910,7 @@ errorDiff <- function(mydata, vars = "day.hour", poll1, poll2, type, B = B,
   
   ## bootstrap mean difference confidence intervals
   ## rearrange data
-  mydata <- dcast(mydata, ... ~ variable)
+  mydata <- spread(mydata, key = variable, value = value)
   if (vars == "hour") splits <- c("hour", type)
   if (vars == "day.hour") splits <- c("hour", "wkday", type)
   if (vars == "wkday") splits <- c("wkday", type)
