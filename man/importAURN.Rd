@@ -320,12 +320,19 @@ pollutant = c("nox", "no2", "o3"))}
 
 ## reshape the data so that each column represents a pollutant/site
 \dontrun{
-require(reshape2)
+require(tidyr)
 thedata <- importAURN(site = c("nott", "kc1"), year = 2008,
-pollutant = "o3")
-thedata <- melt(thedata, measure.vars = "o3")
-thedata <- dcast(thedata, ... ~ variable + site + code)
-## thedata now has columns  o3_Nottingham Centre_NOTT o3_London N. Kensington_KC1
+pollutant = c("o3", "no2"))
+
+# gather numeric columns
+thedata <- gather(thedata, key = key, value = value, no2:o3)
+
+# make a single key
+thedata <- unite(thedata, site_pol, site, code, key)
+
+# now spread out
+the data <- spread(thedata, key = site_pol, value = value)
+
 
 }
 
