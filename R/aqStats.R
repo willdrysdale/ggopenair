@@ -74,7 +74,6 @@
 ##' @param ... Other arguments, currently unused.
 ##' @import lazyeval
 ##' @export
-##' @import reshape2
 ##' @author David Carslaw
 ##' @keywords methods
 ##' @examples
