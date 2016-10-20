@@ -220,6 +220,7 @@ pollutionRose <- function(mydata, pollutant = "nox", key.footer = pollutant,
 ##' \code{quickText} to handle routine formatting.
 ##'
 ##' @export windRose pollutionRose
+##' @useDynLib ggopenair
 ##' @import dplyr
 ##' @import lazyeval
 ##' @importFrom plyr ddply ldply dlply llply numcolwise . 

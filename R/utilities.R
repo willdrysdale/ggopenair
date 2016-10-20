@@ -248,7 +248,7 @@ rollingMean <- function(mydata, pollutant = "o3", width = 8, new.name = "rolling
 
         mydata[[new.name]] <- .Call("rollingMean", mydata[[pollutant]],
                                     width, data.thresh, align,
-                                    PACKAGE = "openair")
+                                    PACKAGE = "ggopenair")
 
         if (length(dates) != nrow(mydata)) {
             ## return what was put in
