@@ -565,20 +565,21 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
     geom_line(color = "grey80") +
     geom_point(color = data.col, size = 3) +
     geom_abline(data = distinct_(split.data, type, .keep_all = TRUE), 
-                aes(slope = b, intercept = a, inherit.aes = FALSE), 
+                aes(slope = b, intercept = a), 
                 size = trend$lwd[1], 
                 color = trend$col[1], lty = trend$lty[1]) +
     geom_abline(data = subDat,
-                aes(slope = upper.b, intercept = upper.a, inherit.aes = FALSE), 
+                aes(slope = upper.b, intercept = upper.a), 
                 size = trend$lwd[2], 
                 color = trend$col[2], lty = trend$lty[2]) +
     geom_abline(data = subDat,
-                aes(slope = lower.b, intercept = lower.a, inherit.aes = FALSE), 
+                aes(slope = lower.b, intercept = lower.a), 
                 size = trend$lwd[2], 
                 color = trend$col[2], lty = trend$lty[2]) +
     geom_text(data = subDat,
-              aes(x = mean(split.data[["date"]]), y = 1.1 * max(split.data[["conc"]], na.rm = TRUE), 
-                  label = eq, inherit.aes = FALSE), color = "forestgreen", size = 3,
+              aes(x = mean(split.data[["date"]]), 
+                  y = 1.1 * max(split.data[["conc"]], na.rm = TRUE), 
+                  label = eq), color = "forestgreen", size = 3,
               vjust = "top") +
     ylab(extra.args$ylab) +
     xlab(xlab)
