@@ -509,16 +509,7 @@ pollutant = c("nox", "no2", "o3"))}
 ## import met data too...
 \dontrun{my1 <- importKCL(site = "my1", year = 2008, met = TRUE)}
 
-## reshape the data so that each column represents a pollutant/site
-\dontrun{
-require(reshape2)
-thedata <- importKCL(site = c("my1", "kc1"), year = 2008,
-pollutant = "o3")
-thedata <- melt(thedata, measure.vars="o3")
-thedata <- dcast(thedata, ... ~ site + code + variable)
-## thedata now has columns for O3 at MY1 and KC1
-
-}
+# see example in importAURN about how to reshape the output
 
 
 
