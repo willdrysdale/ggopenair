@@ -15,6 +15,7 @@ Imports:
     plyr,
     lazyeval,
     dplyr,
+    tidyr,
     reshape2,
     ggplot2,
     mgcv,

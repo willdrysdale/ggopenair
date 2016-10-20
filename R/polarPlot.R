@@ -296,6 +296,7 @@
 ##'   formatting.
 ##' @export
 ##' @import lattice
+##' @import tidyr
 ##' @import mgcv
 ##' @return As well as generating the plot itself, \code{polarPlot} 
 ##'   also returns an object of class ``openair''. The object includes
@@ -491,7 +492,7 @@ polarPlot <-
       type <- type[1]
     }
     ## use pollutants as conditioning variables
-    mydata <- melt(mydata, measure.vars = pollutant)
+    mydata <- gather(mydata, measure.vars = pollutant)
     ## now set pollutant to "value"
     pollutant <- "value"
     
