@@ -423,7 +423,8 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
     quickText(name.pol[x], auto.text))
   
   if (missing(group)) {
-    mydata <- melt(mydata, measure.vars = poll.orig)
+    
+    mydata <- gather(mydata, key = variable, value = value, one_of(poll.orig))
     mydata$variable <- factor(mydata$variable)  ## drop unused factor levels
     
   } else {

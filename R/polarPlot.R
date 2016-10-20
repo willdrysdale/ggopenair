@@ -492,7 +492,7 @@ polarPlot <-
       type <- type[1]
     }
     ## use pollutants as conditioning variables
-    mydata <- gather(mydata, measure.vars = pollutant)
+    mydata <- gather(mydata, key = variable, value = value, one_of(pollutant))
     ## now set pollutant to "value"
     pollutant <- "value"
     
