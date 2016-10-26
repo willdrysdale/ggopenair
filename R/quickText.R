@@ -141,7 +141,7 @@ quickText <- function(text, auto.text = TRUE, expression = TRUE){
     ans <- gsub("umol/m2/s", "' * mu * 'mol m' ^-2 * ' s' ^-1 *'", ans)
     ans <- gsub("umol/m2", "' * mu * 'mol m' ^-2 *'", ans)
   
-    if (expression) 
+    if (expression) {
       ans <- paste(ans, "'))", sep = "")
       
     
@@ -153,6 +153,7 @@ quickText <- function(text, auto.text = TRUE, expression = TRUE){
         a <- ans
         ans <- paste(substr(a, 1, (nchar(a) - 7)),
                      substr(a, (nchar(a) - 5), nchar(a)), sep = "")
+    }
     }
 
     ans <- gsub("''", "", ans)
@@ -187,7 +188,7 @@ quickText <- function(text, auto.text = TRUE, expression = TRUE){
     if (inherits(try(eval(parse(text = ans)), TRUE), "try-error") ==
         FALSE) {
         
-      if (expression) ans <- eval(parse(text = ans)) 
+      if (expression) ans <- eval(parse(text = ans)) else ans <- paste0("'", ans, "'")
       
     }
     else {
