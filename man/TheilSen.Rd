@@ -6,12 +6,12 @@
 \usage{
 TheilSen(mydata, pollutant = "nox", deseason = FALSE, type = "default",
   avg.time = "month", statistic = "mean", percentile = NA,
-  data.thresh = 0, alpha = 0.05, dec.place = 2, xlab = "year",
-  lab.frac = 0.99, lab.cex = 0.8, x.relation = "same",
+  data.thresh = 0, alpha = 0.05, size = 3, dec.place = 2,
+  xlab = "year", lab.frac = 0.99, lab.cex = 0.8, x.relation = "same",
   y.relation = "same", data.col = "grey40", trend = list(lty = c(1, 5),
   lwd = c(2, 1), col = c("dodgerblue", "darkorange")), text.col = "darkgreen",
-  slope.text = NULL, cols = NULL, shade = "grey95", auto.text = TRUE,
-  autocor = FALSE, slope.percent = FALSE, date.breaks = 7, ...)
+  slope.text = NULL, cols = NULL, auto.text = TRUE, autocor = FALSE,
+  slope.percent = FALSE, date.breaks = 7, ...)
 }
 \arguments{
 \item{mydata}{A data frame containing the field \code{date} and at
@@ -74,6 +74,8 @@ as \code{NA}.}
 slope. The default is 0.05. To show 99\% confidence intervals
 for the value of the trend, choose alpha = 0.01 etc.}
 
+\item{size}{Size of plotting symbol to use.}
+
 \item{dec.place}{The number of decimal places to display the trend
 estimate at. The default is 2.}
 
@@ -107,9 +109,7 @@ estimates}
 \sQuote{units/year}).}
 
 \item{cols}{Predefined colour scheme, currently only enabled for 
-\code{"greyscale"}.}
-
-\item{shade}{The colour used for marking alternate years. Use 
+\code{"greyscale"}. 
 \dQuote{white} or \dQuote{transparent} to remove shading.}
 
 \item{auto.text}{Either \code{TRUE} (default) or \code{FALSE}. If 

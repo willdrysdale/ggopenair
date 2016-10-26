@@ -101,6 +101,7 @@
 ##' @param alpha For the confidence interval calculations of the
 ##'   slope. The default is 0.05. To show 99\% confidence intervals
 ##'   for the value of the trend, choose alpha = 0.01 etc.
+##' @param size Size of plotting symbol to use.
 ##' @param dec.place The number of decimal places to display the trend
 ##'   estimate at. The default is 2.
 ##' @param xlab x-axis label, by default \code{"year"}.
@@ -124,8 +125,7 @@
 ##' @param slope.text The text shown for the slope (default is
 ##'   \sQuote{units/year}).
 ##' @param cols Predefined colour scheme, currently only enabled for 
-##'   \code{"greyscale"}.
-##' @param shade The colour used for marking alternate years. Use 
+##'   \code{"greyscale"}. 
 ##'   \dQuote{white} or \dQuote{transparent} to remove shading.
 ##' @param auto.text Either \code{TRUE} (default) or \code{FALSE}. If 
 ##'   \code{TRUE} titles and axis labels will automatically try and
@@ -248,37 +248,17 @@
 TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE, 
                      type = "default", avg.time = "month",
                      statistic = "mean", percentile = NA, data.thresh = 0, alpha = 0.05,
+                     size = 3,
                      dec.place = 2, xlab = "year", lab.frac = 0.99, lab.cex = 0.8,
                      x.relation = "same", y.relation = "same", data.col = "grey40",
                      trend = list(lty = c(1, 5), lwd = c(2, 1), col = c("dodgerblue", "darkorange")),
                      text.col = "darkgreen", slope.text = NULL, cols = NULL, 
-                     shade = "grey95", auto.text = TRUE,
+                     auto.text = TRUE,
                      autocor = FALSE, slope.percent = FALSE, date.breaks = 7,...)  {
   
   ## get rid of R check annoyances
   a = b = lower.a = lower.b = upper.a = upper.b = slope.start = date.end = intercept.start = date.start = lower.start = intercept.lower.start = upper.start = intercept.upper.start = NULL
   
-  ## set graphics
-  current.strip <- trellis.par.get("strip.background")
-  current.font <- trellis.par.get("fontsize")
-  
-  ## reset graphic parameters
-  on.exit(trellis.par.set(strip.background = current.strip,
-                          fontsize = current.font))
-  
-  ## greyscale handling
-  if (length(cols) == 1 && cols == "greyscale") {
-    
-    trellis.par.set(list(strip.background = list(col = "white")))
-    ## other local colours
-    trend$col <- c("black", "black")
-    data.col <- "darkgrey"
-    text.col <- "black"
-  } else {
-    
-    data.col <- data.col
-    text.col <- text.col
-  }
   
   ## extra.args setup
   extra.args <- list(...)
@@ -291,8 +271,6 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
   extra.args$main <- if ("main" %in% names(extra.args))
     quickText(extra.args$main, auto.text) else quickText("", auto.text)
   
-  if ("fontsize" %in% names(extra.args))
-    trellis.par.set(fontsize = list(text = extra.args$fontsize))
   
   xlim <- if ("xlim" %in% names(extra.args))
     extra.args$xlim else  NULL
@@ -563,7 +541,7 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
   
   plt <- ggplot(split.data, aes(x = date, y = conc)) +
     geom_line(color = "grey80") +
-    geom_point(color = data.col, size = 3) +
+    geom_point(color = data.col, size = size) +
     geom_abline(data = distinct_(split.data, type, .keep_all = TRUE), 
                 aes(slope = b, intercept = a), 
                 size = trend$lwd[1], 
@@ -579,7 +557,7 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
     geom_text(data = subDat,
               aes(x = mean(split.data[["date"]]), 
                   y = 1.1 * max(split.data[["conc"]], na.rm = TRUE), 
-                  label = eq), color = "forestgreen", size = 3,
+                  label = eq), color = text.col, size = 3,
               vjust = "top") +
     ylab(extra.args$ylab) +
     xlab(xlab)
