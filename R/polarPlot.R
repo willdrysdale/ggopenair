@@ -295,7 +295,6 @@
 ##'   \code{levelplot} via \code{quickText} to handle routine 
 ##'   formatting.
 ##' @export
-##' @import lattice
 ##' @import tidyr
 ##' @import mgcv
 ##' @return As well as generating the plot itself, \code{polarPlot} 
@@ -425,20 +424,6 @@ polarPlot <-
   
   if ("cpf" %in% key.header) key.header <- c("CPF", "probability")
   
-  ## greyscale handling
-  if (length(cols) == 1 && cols == "greyscale") {
-    
-    trellis.par.set(list(strip.background = list(col = "white")))
-  }
-  
-  ## set graphics
-  current.strip <- trellis.par.get("strip.background")
-  current.font <- trellis.par.get("fontsize")
-  
-  ## reset graphic parameters
-  on.exit(trellis.par.set(strip.background = current.strip,
-                          fontsize = current.font))
-  
   
   ## extra.args setup
   extra.args <- list(...)
@@ -453,10 +438,7 @@ polarPlot <-
   extra.args$main <- if ("main" %in% names(extra.args))
     quickText(extra.args$main, auto.text) else quickText("", auto.text)
   
-  if ("fontsize" %in% names(extra.args))
-    trellis.par.set(fontsize = list(text = extra.args$fontsize))
-  
-  ## layout default
+   ## layout default
   if (!"layout" %in% names(extra.args))
     extra.args$layout <- NULL
   
@@ -761,10 +743,9 @@ polarPlot <-
   
   ## proper names of labelling 
   strip.dat <- strip.fun(res, type, auto.text)
-  strip <- strip.dat[[1]]
-  strip.left <- strip.dat[[2]]
-  pol.name <- strip.dat[[3]]
-  pol.name2 <- strip.dat[[4]]
+  
+  pol.name <- strip.dat[[1]]
+  pol.name2 <- strip.dat[[2]]
   
   
   # proper names for strip labels

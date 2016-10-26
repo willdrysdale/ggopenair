@@ -152,7 +152,7 @@ number of intervals by adjusting the value of \code{date.breaks}
 up or down.}
 
 \item{...}{Other graphical parameters passed onto \code{cutData}
-and \code{lattice:xyplot}. For example, \code{TheilSen} passes
+ For example, \code{TheilSen} passes
 the option \code{hemisphere = "southern"} on to \code{cutData}
 to provide southern (rather than default northern) hemisphere
 handling of \code{type = "season"}. Similarly, common axis and

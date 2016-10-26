@@ -163,7 +163,7 @@
 ##'   number of intervals by adjusting the value of \code{date.breaks}
 ##'   up or down.
 ##' @param ... Other graphical parameters passed onto \code{cutData}
-##'   and \code{lattice:xyplot}. For example, \code{TheilSen} passes
+##'    For example, \code{TheilSen} passes
 ##'   the option \code{hemisphere = "southern"} on to \code{cutData}
 ##'   to provide southern (rather than default northern) hemisphere
 ##'   handling of \code{type = "season"}. Similarly, common axis and
@@ -421,10 +421,9 @@ TheilSen <- function(mydata, pollutant = "nox", deseason = FALSE,
   
   ## proper names of labelling 
   strip.dat <- strip.fun(split.data, type, auto.text)
-  strip <- strip.dat[[1]]
-  strip.left <- strip.dat[[2]]
-  pol.name <- strip.dat[[3]]
-  pol.name2 <- strip.dat[[4]]
+ 
+  pol.name <- strip.dat[[1]]
+  pol.name2 <- strip.dat[[2]]
   
   
   # proper names for strip labels

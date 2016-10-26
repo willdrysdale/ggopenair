@@ -18,8 +18,6 @@ Imports:
     tidyr,
     ggplot2,
     mgcv,
-    lattice,
-    latticeExtra,
     lubridate,
     cluster,
     RColorBrewer,

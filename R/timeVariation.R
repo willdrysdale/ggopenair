@@ -172,7 +172,7 @@
 ##'   and \code{cutData}. For example, in the case of \code{cutData} the option
 ##'   \code{hemisphere = "southern"}.
 ##'
-##' @import lattice ggplot2
+##' @import ggplot2
 ##' @importFrom lubridate ymd
 ##' @export
 ##' @return As well as generating the plot itself, \code{timeVariation} also
@@ -296,8 +296,6 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   Args$main <- if ("main" %in% names(Args))
     quickText(Args$main, auto.text) else quickText("", auto.text)
   
-  if ("fontsize" %in% names(Args))
-    trellis.par.set(fontsize = list(text = Args$fontsize))
   
   if (statistic == "median" && missing(conf.int)) conf.int <- c(0.75, 0.95)
   
@@ -537,14 +535,7 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
                              statistic = statistic)
   }
   
-  # proper names of labelling 
-  if (type != "default") {
-    stripName <- sapply(levels(factor(data.hour[[type]])), function(x) quickText(x, auto.text))
-    strip <- strip.custom(factor.levels =  stripName)
-  } else {
-    strip <- FALSE
-  }
-  
+ 
   
   if (normalise) data.hour <- group_by(data.hour, variable) %>%
     do(divide.by.mean(.))
@@ -726,18 +717,10 @@ timeVariation <- function(mydata, pollutant = "nox", local.tz = NULL,
   
   ## proper names of labelling #####################################################################
   
-  strip <- strip.custom(par.strip.text = list(cex = 0.8))
-  
-  
-  if (type == "default") {
-    strip.left <- FALSE
-    layout <- c(length(unique(mydata$wkday)), 1)
-    
-  } else { ## two conditioning variables
+    if (type != "default") {
     
     stripName <- sapply(levels(factor(data.day.hour[[type]])), function(x) quickText(x, auto.text))
-    strip.left <- strip.custom(factor.levels =  stripName)
-    layout <- NULL
+    
   }
   
   

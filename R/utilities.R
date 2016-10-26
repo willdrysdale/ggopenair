@@ -15,19 +15,6 @@ dateTypes <- c("year", "hour", "month", "season", "weekday", "weekend",
                "monthyear", "gmtbst", "bstgmt", "dst", "daylight",
                "seasonyear", "yearseason")
 
-## sets up how openair graphics look by default and resets on exit
-
-setGraphics <- function(fontsize = 5) {
-
-  current.strip <- trellis.par.get("strip.background")
-  trellis.par.set(fontsize = list(text = fontsize))
-
-  ## reset graphic parameters
-  font.orig <- trellis.par.get("fontsize")$text
-  on.exit(trellis.par.set(strip.background = current.strip,
-                          fontsize = list(text = font.orig)))
-
-}
 
 ###############################################################################
 
@@ -515,39 +502,6 @@ selectByDate <- function (mydata, start = "1/1/2008",
 }
 
 
-## from Deepayan Sarkar
-panel.smooth.spline <-
-    function(x, y,
-             w = NULL, df, spar = NULL, cv = FALSE,
-             lwd = lwd, lty = plot.line$lty,col, col.line = plot.line$col,
-             type, horizontal = FALSE, all.knots = TRUE,... )
-{
-    x <- as.numeric(x)
-    y <- as.numeric(y)
-    ok <- is.finite(x) & is.finite(y)
-    if (sum(ok) < 1)
-        return()
-    if (!missing(col)) {
-        if (missing(col.line))
-            col.line <- col
-    }
-    plot.line <- trellis.par.get("plot.line")
-    if (horizontal) {
-        spline <-
-            smooth.spline(y[ok], x[ok],
-                          w=w, df=df, spar = spar, cv = cv)
-        panel.lines(x = spline$y, y = spline$x, col = col.line,
-                    lty = lty, lwd = lwd, ...)
-    }
-    else {
-        spline <-
-            smooth.spline(x[ok], y[ok],
-                          w=w, df=df, spar = spar, cv = cv)
-        panel.lines(x = spline$x, y = spline$y, col = col.line,
-                    lty = lty, lwd = lwd, ...)
-    }
-
-}
 
 ### panel functions for plots based on lattice ####################################################
 
@@ -921,23 +875,21 @@ strip.fun <- function(results.grid, type, auto.text) {
     ## proper names of labelling ###################################################
     pol.name <- sapply(levels(factor(results.grid[[type[1]]])),
                        function(x) quickText(x, auto.text, expression = FALSE))
-    strip <- strip.custom(factor.levels = pol.name)
+    
     
     pol.name2 <- NULL
 
-    if (length(type) == 1 ) {
+    if (length(type) != 1 ) {
 
-        strip.left <- FALSE
-
-    } else { ## two conditioning variables
+         ## two conditioning variables
 
         pol.name2 <- sapply(levels(factor(results.grid[[type[2]]])),
                            function(x) quickText(x, auto.text, expression = FALSE))
-        strip.left <- strip.custom(factor.levels = pol.name)
+       
         
     }
     if (length(type) == 1 & type[1] == "default") strip <- FALSE ## remove strip
-    list(strip, strip.left, pol.name, pol.name2)
+    list(pol.name, pol.name2)
 }
 
 

@@ -346,8 +346,6 @@ windRose <- function (mydata, ws = "ws", wd = "wd", ws2 = NA, wd2 = NA,
     extra$main <- if("main" %in% names(extra))
                       quickText(extra$main, auto.text) else quickText("", auto.text)
 
-    if ("fontsize" %in% names(extra))
-        trellis.par.set(fontsize = list(text = extra$fontsize))
     
     rounded <- FALSE ## is the wd already rounded to 10 degrees, if so need to correct bias later
     if (all(mydata[[wd]] %% 10 == 0, na.rm = TRUE)) rounded <- TRUE
@@ -624,9 +622,8 @@ windRose <- function (mydata, ws = "ws", wd = "wd", ws2 = NA, wd2 = NA,
 
     ## proper names of labelling###########################################
     strip.dat <- strip.fun(results, type, auto.text)
-    strip <- strip.dat[[1]]
-    strip.left <- strip.dat[[2]]
-    pol.name <- strip.dat[[3]]
+    
+    pol.name <- strip.dat[[1]]
 
     if (length(labs) < length(cols)) {
         col <- cols[1:length(labs)]
