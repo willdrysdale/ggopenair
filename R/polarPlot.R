@@ -866,8 +866,8 @@ polarPlot <-
     theme_void() +
     coord_cartesian(xlim = c(-upper * 1.025, upper * 1.025),
                     ylim = c(-upper * 1.025, upper * 1.025)) +
-    geom_polygon(data = datapoly, aes(x = x, y = y), color = "white", 
-                 fill = "white") 
+    # geom_polygon(data = datapoly, aes(x = x, y = y), color = "white", 
+    #              fill = "white") 
   
   if ("miss" %in% names(res))
     plt <- plt + geom_raster(data  = filter(res, !is.na(miss)), aes(x = u, y = v), 
@@ -876,7 +876,8 @@ polarPlot <-
   
   plt <- plt +
     geom_raster(na.rm = FALSE, aes(fill = z)) +
-    geom_path(data = datalines, aes(x = x, y = y), color = "black") +
+    geom_path(data = datalines, aes(x = x, y = y), color = "black",
+              linetype = "dashed") +
     geom_segment(data = data.axes, aes(x = x1, y = y1, xend = x2, yend = y2), 
                  color = "black") +
     geom_text(data = data.scale, aes(x = x, y = y, label = label), 
@@ -885,8 +886,10 @@ polarPlot <-
     annotate("text", 0, upper * -1 * 0.95, label = "S") +
     annotate("text", 0, upper * 0.95, label = "N") +
     annotate("text", upper * 0.95, 0, label = "E") +
-    scale_fill_gradientn(colours = openColours(cols, 100), 
+    scale_fill_viridis_c(option = "plasma",
                          na.value = "transparent", limits = limits) +
+    # scale_fill_gradientn(colours = openColours(cols, 100), 
+    #                      na.value = "transparent", limits = limits) +
     guides(fill = guide_colourbar(title = quickText(key.footer), 
                                   barheight = unit(0.5, "npc"))) +
     theme(aspect.ratio = 1, strip.background = element_rect(fill = "white"))
