@@ -857,9 +857,10 @@ polarPlot <-
   lab.interval <- intervals[-length(intervals)]
   
   data.scale <- data.frame(x = 1.07 * lab.interval * sin(pi * angle.scale / 180),
-                           y = 1.07 * lab.interval * cos(pi * angle.scale / 180), 
-                           label = labels[-length(labels)])
+                           y = 1.07 * lab.interval * cos(pi * angle.scale / 180))
   
+  label = labels[-length(labels)]
+  data.scale$label = label[1:nrow(data.scale)]
   
   # polar plot test
   plt <- ggplot(res, aes(x = u, y = v)) +
@@ -870,12 +871,12 @@ polarPlot <-
     #              fill = "white") 
   
   if ("miss" %in% names(res))
-    plt <- plt + geom_raster(data  = filter(res, !is.na(miss)), aes(x = u, y = v), 
+    plt <- plt + geom_tile(data  = filter(res, !is.na(miss)), aes(x = u, y = v), 
                              fill = mis.col, 
                              inherit.aes = FALSE) 
   
   plt <- plt +
-    geom_raster(na.rm = FALSE, aes(fill = z)) +
+    geom_tile(na.rm = FALSE, aes(fill = z)) +
     geom_path(data = datalines, aes(x = x, y = y), color = "black",
               linetype = "dashed") +
     geom_segment(data = data.axes, aes(x = x1, y = y1, xend = x2, yend = y2), 
